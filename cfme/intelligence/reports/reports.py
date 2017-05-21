@@ -93,6 +93,8 @@ report_form = TabStripForm(
             ("filter_owner", select(id="cb_owner_id")),
             ("filter_tag_cat", select(id="cb_tag_cat")),
             ("filter_tag_value", select(id="cb_tag_value")),
+            ("interval", select(id="cb_interval")),
+            ("interval_size", select(id="cb_interval_size")),
             ("interval_end", select(id="cb_end_interval_offset")),
         ],
         "Summary": [
@@ -151,6 +153,9 @@ class CustomReport(Updateable, Navigatable):
         "filter_owner": None,
         "filter_tag_cat": None,
         "filter_tag_value": None,
+        "interval": None,
+        "interval_size": None,
+        "interval_end": None,
         "sort": None,
         "chart_type": None,
         "top_values": None,
