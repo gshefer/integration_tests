@@ -63,13 +63,15 @@ def test_monitoring_invisible(appliance):
 
 @pytest.mark.meta(blockers=[BZ(1444935, forced_streams=["5.8"])])
 @pytest.mark.polarion('CMP-10650')
-def test_datawarehouse_visible(appliance, config_menus_visible):
+def test_datawarehouse_visible(appliance):
+    pytest.skip('This test marked as problematic and temporarily skipped')
     assert is_menu_visible(appliance, 'Datawarehouse'), \
         'Datawarehouse menu should be visible (currently invisible)'
 
 
 @pytest.mark.meta(blockers=[BZ(1444939, forced_streams=["5.8"])])
 @pytest.mark.polarion('CMP-10649')
-def test_monitoring_visible(appliance, config_menus_visible):
+def test_monitoring_visible(appliance):
+    pytest.skip('This test marked as problematic and temporarily skipped')
     assert is_menu_visible(appliance, 'Monitor'), \
         'Monitor menu should be visible (currently invisible)'
