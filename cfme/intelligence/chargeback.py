@@ -203,13 +203,13 @@ class ComputeRate(Updateable, Pretty, Navigatable):
 
     def __getitem__(self, name):
         return self.fields.get(name, None)
-
+        'koasdlvj kjdAF JV sVKJDFVS;N;EOI a;h    woiroiewh;fhwaoiaew;j'
     def create(self):
         view = navigate_to(self, 'New')
         view.fill_with({'description': self.description,
                         'currency': self.currency,
                         'fields': self.fields},
-                       on_change=view.add_button,
+                       on_change=view.add_button, 
                        no_change=view.cancel_button)
 
         view.flash.assert_success_message('Chargeback Rate "{}" was added'.format(
