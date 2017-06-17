@@ -68,6 +68,7 @@ def random_labels(provider, appliance):
 
 
 @pytest.mark.polarion('CMP-10572')
+@pytest.mark.long_running_env#    remove this!!!           
 def test_labels_create(provider, soft_assert, random_labels):
 
     provider.refresh_provider_relationships()
@@ -90,6 +91,7 @@ def test_labels_create(provider, soft_assert, random_labels):
 
 @pytest.mark.meta(blockers=[BZ(1451832, forced_streams=['5.7', '5.8', 'upstream'])])
 @pytest.mark.polarion('CMP-10572')
+@pytest.mark.long_running_env#    remove this!!!  
 def test_labels_remove(provider, soft_assert, random_labels):
     # Removing the labels
     for instance, label_name, label_value, results_status, _ in random_labels:
