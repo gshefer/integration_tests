@@ -2,7 +2,7 @@
 from cfme.web_ui import FileInput, Input, Radio, form_buttons
 from cfme.web_ui.tabstrip import TabStripForm
 from utils import conf
-from copy import deepcopy
+from copy import copy
 from utils.pretty import Pretty
 from utils.update import Updateable
 
@@ -10,7 +10,7 @@ from utils.update import Updateable
 class FromConfigMixin(object):
     @classmethod
     def from_config(cls, key):
-        creds = deepcopy(conf.credentials[key])
+        creds = copy(conf.credentials[key])
 
         # todo: fix this along with other credential fixes. code or credentials conf ?
         to_rename = [('password', 'secret'), ('username', 'principal')]
@@ -184,7 +184,7 @@ class ServiceAccountCredential(Pretty, Updateable):
     @classmethod
     def from_config(cls, key):
         # TODO: refactor this. consider json.dumps
-        creds = deepcopy(conf.credentials[key])
+        creds = copy(conf.credentials[key])
         service_data = creds['service_account']
         service_account = '''
                   "type": "{type}",
