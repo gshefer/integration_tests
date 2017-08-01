@@ -57,10 +57,6 @@ class AddComputeChargebackView(RatesView):
         PARAMETERS = ('name',)
         ROOT = ParametrizedLocator('.//tr[./td[contains(normalize-space(.), {name|quote})]]')
 
-        def __locator__(self):
-            # This is a temporary work-around since ROOT doesn't properly generates the locator
-            return self.browser.element(self.ROOT, parent=self.parent)
-
         @cached_property
         def row_id(self):
             attr = self.browser.get_attribute(
@@ -77,55 +73,14 @@ class AddComputeChargebackView(RatesView):
                 parent=self)
             return int(attr.rsplit('_', 1)[-1])
 
-        @ParametrizedView.nested
-        class sub_rows(ParametrizedView):  # noqa
-            PARAMETERS = ('index',)
-            ROOT = ParametrizedLocator(
-                '../tr[./td/input[starts-with(@id, "fixed_rate_{@row_id}_{index}")]]')
-
-            def __locator__(self):
-                return self.browser.element(self.ROOT, parent=self.parent)
-
-            @cached_property
-            def row_id(self):
-                return self.parent.row_id
-
-            def fill(self, values):
-                # TODO: Align the functionality once this issue solved:
-                # https://github.com/RedHatQE/widgetastic.core/issues/49
-                if not self.is_displayed:
-                    self.__class__(index=self.context['index'] - 1).action_add.click()
-                return super(self.__class__, self).fill(values)
-
-            per_time = Select(id=ParametrizedString('per_time_{@row_id}'))
-            per_unit = Select(id=ParametrizedString('per_unit_{@row_id}'))
-            start = Input(id=ParametrizedString('start_{@row_id}_{index}'))
-            finish = Input(id=ParametrizedString('finish_{@row_id}_{index}'))
-            fixed_rate = Input(id=ParametrizedString('fixed_rate_{@row_id}_{index}'))
-            variable_rate = Input(id=ParametrizedString('variable_rate_{@row_id}_{index}'))
-            action_add = Button(title='Add a new tier')
-            action_delete = Button(title='Remove the tier')
-
-        def fill(self, values):
-            """If we want multiple tiers per metric, we can map the values as list (or tuple)
-            and then it'll add a new tiers accordingly (if no such sub row exists).
-            In case that we didn't provide some sub row and it exists, we delete it
-            (since there are some cases that such sub rows exist by default)."""
-            # TODO: Align the functionality once this issue solved:
-            # https://github.com/RedHatQE/widgetastic.core/issues/49
-            if not isinstance(values, (list, tuple)):
-                values = [values]
-            sub_row_id = 0
-            while True:
-                sub_row = self.sub_rows(index=sub_row_id)
-                if sub_row_id < len(values):
-                    sub_row.fill(values[sub_row_id])
-                elif sub_row.is_displayed:
-                    sub_row.action_delete.click()
-                    continue
-                else:
-                    break
-                sub_row_id += 1
+        per_time = Select(id=ParametrizedString('per_time_{@row_id}'))
+        per_unit = Select(id=ParametrizedString('per_unit_{@row_id}'))
+        start = Input(id=ParametrizedString('start_{@row_id}_{@sub_row_id}'))
+        finish = Input(id=ParametrizedString('finish_{@row_id}_{@sub_row_id}'))
+        fixed_rate = Input(id=ParametrizedString('fixed_rate_{@row_id}_{@sub_row_id}'))
+        variable_rate = Input(id=ParametrizedString('variable_rate_{@row_id}_{@sub_row_id}'))
+        action_add = Button(title='Add a new tier')
+        action_delete = Button(title='Remove the tier')
 
     add_button = Button(title='Add')
     cancel_button = Button(title='Cancel')
@@ -225,17 +180,6 @@ class ComputeRate(Updateable, Pretty, Navigatable):
         view.flash.assert_success_message('Chargeback Rate "{}" was added'.format(
             self.description))
 
-    def copy(self, *args, **kwargs):
-        new_rate = ComputeRate(*args, **kwargs)
-        add_view = navigate_to(self, 'Copy')
-        add_view.fill_with({'description': new_rate.description,
-                            'currency': new_rate.currency,
-                            'fields': new_rate.fields},
-                           on_change=add_view.add_button,
-                           no_change=add_view.cancel_button)
-
-        return new_rate
-
     def update(self, updates):
         # Update a rate in UI
         view = navigate_to(self, 'Edit')
@@ -294,15 +238,6 @@ class ComputeRateDetails(CFMENavigateStep):
             "Rates",
             "Compute", self.obj.description
         )
-
-
-@navigator.register(ComputeRate, 'Copy')
-class ComputeRateCopy(CFMENavigateStep):
-    VIEW = AddComputeChargebackView
-    prerequisite = NavigateToSibling('Details')
-
-    def step(self):
-        self.view.configuration.item_select('Copy this Chargeback Rate')
 
 
 @navigator.register(ComputeRate, 'Edit')
