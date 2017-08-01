@@ -8,6 +8,7 @@ from cfme.containers.provider import ContainersProvider
 from cfme.intelligence.chargeback import assignments
 from cfme.intelligence.reports.reports import CustomReport
 from cfme.web_ui import flash
+from cfme.fixtures.chargeback_rate import new_chargeback_rate_base
 
 
 pytestmark = [
@@ -25,7 +26,16 @@ TEST_MATCH_ACCURACY = 0.01
 rate_interval_factor_lut = {'Hourly': 24, 'Daily': 7, 'Weekly': 4.29, 'Monthly': 1}
 
 
-def assign_compute_custom_rate(chargeback_rate, provider):
+@pytest.mark.yield_fixture(scope='function')
+def new_chargeback_hourly_fixed_compute_rate(appliance):
+    # used for test_project_chargeback_new_fixed_rate
+    cb_rate = new_chargeback_rate_base(appliance, 'Hourly', True)
+    yield cb_rate
+    cb_rate.delete()
+
+
+@pytest.yield_fixture(scope='module')
+def assign_compute_custom_rate(new_chargeback_rate, provider):
     """Assign custom Compute rate for project
     Args:
         :py:class:`ComputeRate` chargeback_rate: The chargeback rate object
@@ -34,19 +44,13 @@ def assign_compute_custom_rate(chargeback_rate, provider):
     asignment = assignments.Assign(
         assign_to="Selected Containers Providers",
         selections={
-            provider.name: chargeback_rate.description
+            provider.name: new_chargeback_rate.description
         })
     logger.info('ASSIGNING CUSTOM COMPUTE RATE FOR PROJECT CHARGEBACK')
     asignment.computeassign()
 
-    return chargeback_rate
+    yield new_chargeback_rate
 
-
-def revert_to_default_rate(provider):
-    """Reverting the assigned compute rate to default rate
-    Args:
-        :py:class:`ContainersProvider` provider: the Containers Provider to be selected for the rate
-    """
     asignment = assignments.Assign(
         assign_to="Selected Containers Providers",
         selections={
@@ -55,14 +59,17 @@ def revert_to_default_rate(provider):
     asignment.computeassign()
 
 
-def gen_report_base(provider, rate_desc, rate_interval):
-    """Base function for report generation
+@pytest.yield_fixture(scope='module')
+def new_chargeback_report(provider, assign_compute_custom_rate):
+    """Generating a new chargeback report
     Args:
         :py:class:`ContainersProvider` provider: The Containers Provider
-        :py:type:`str` rate_desc: The rate description as it appears in the report
-        :py:type:`str` rate_interval: The rate interval, (Hourly/Daily/Weekly/Monthly)
+        :py:class:`ComputeRate` assign_compute_custom_rate: The chargeback rate object.
+    Yield:
+        :py:class:`CustomReport` report: The chargeback report.
+        :py:class:`ComputeRate` assign_compute_custom_rate: The chargeback rate object.
     """
-    title = 'report_project_' + rate_desc
+    title = 'report_project_' + assign_compute_custom_rate.description
     data = {
         'menu_name': title,
         'title': title,
@@ -80,6 +87,7 @@ def gen_report_base(provider, rate_desc, rate_interval):
     data['menu_name'] = title
     data['title'] = title
     data['provider'] = provider.name
+    rate_interval = assign_compute_custom_rate['Used CPU Cores']['per_time']
     if rate_interval == 'Hourly':
         data['interval'] = 'Day'
         data['interval_end'] = 'Yesterday'
@@ -101,154 +109,28 @@ def gen_report_base(provider, rate_desc, rate_interval):
     logger.info('QUEUING CUSTOM CHARGEBACK REPORT FOR CONTAINER PROJECT')
     report.queue(wait_for_finish=True)
 
-    return report
+    yield report, assign_compute_custom_rate
 
-
-@pytest.yield_fixture(scope='module')
-def assign_compute_hourly_fixed_rate(new_chargeback_hourly_fixed_compute_rate, provider):
-    # Assign hourly fixed compute rate
-    assign_compute_custom_rate(new_chargeback_hourly_fixed_compute_rate, provider)
-    yield new_chargeback_hourly_fixed_compute_rate.description
-    revert_to_default_rate(provider)
-
-
-@pytest.yield_fixture(scope='module')
-def assign_compute_daily_fixed_rate(new_chargeback_daily_fixed_compute_rate, provider):
-    # Assign daily fixed compute rate
-    assign_compute_custom_rate(new_chargeback_daily_fixed_compute_rate, provider)
-    yield new_chargeback_daily_fixed_compute_rate.description
-    revert_to_default_rate(provider)
-
-
-@pytest.yield_fixture(scope='module')
-def assign_compute_weekly_fixed_rate(new_chargeback_weekly_fixed_compute_rate, provider):
-    # Assign weekly fixed compute rate
-    assign_compute_custom_rate(new_chargeback_weekly_fixed_compute_rate, provider)
-    yield new_chargeback_weekly_fixed_compute_rate.description
-    revert_to_default_rate(provider)
-
-
-@pytest.yield_fixture(scope='module')
-def assign_compute_monthly_fixed_rate(new_chargeback_monthly_fixed_compute_rate, provider):
-    # Assign monthly fixed compute rate
-    assign_compute_custom_rate(new_chargeback_monthly_fixed_compute_rate, provider)
-    yield new_chargeback_monthly_fixed_compute_rate.description
-    revert_to_default_rate(provider)
-
-
-@pytest.yield_fixture(scope='module')
-def assign_compute_hourly_variable_rate(new_chargeback_hourly_variable_compute_rate, provider):
-    # Assign hourly variable compute rate
-    assign_compute_custom_rate(new_chargeback_hourly_variable_compute_rate, provider)
-    yield new_chargeback_hourly_variable_compute_rate.description
-    revert_to_default_rate(provider)
-
-
-@pytest.yield_fixture(scope='module')
-def assign_compute_daily_variable_rate(new_chargeback_daily_variable_compute_rate, provider):
-    # Assign daily variable compute rate
-    assign_compute_custom_rate(new_chargeback_daily_variable_compute_rate, provider)
-    yield new_chargeback_daily_variable_compute_rate.description
-    revert_to_default_rate(provider)
-
-
-@pytest.yield_fixture(scope='module')
-def assign_compute_weekly_variable_rate(new_chargeback_weekly_variable_compute_rate, provider):
-    # Assign weekly variable compute rate
-    assign_compute_custom_rate(new_chargeback_weekly_variable_compute_rate, provider)
-    yield new_chargeback_weekly_variable_compute_rate.description
-    revert_to_default_rate(provider)
-
-
-@pytest.yield_fixture(scope='module')
-def assign_compute_monthly_variable_rate(new_chargeback_monthly_variable_compute_rate, provider):
-    # Assign monthly variable compute rate
-    assign_compute_custom_rate(new_chargeback_monthly_variable_compute_rate, provider)
-    yield new_chargeback_monthly_variable_compute_rate.description
-    revert_to_default_rate(provider)
-
-
-@pytest.yield_fixture(scope='module')
-def chargeback_report_for_hourly_fixed_rate(assign_compute_hourly_fixed_rate, provider):
-    # Chargeback report for hourly fixed compute rate
-    report = gen_report_base(provider, assign_compute_hourly_fixed_rate, 'Hourly')
-    yield list(report.get_saved_reports()[0].data)
     report.delete()
 
 
-@pytest.yield_fixture(scope='module')
-def chargeback_report_for_hourly_variable_rate(assign_compute_hourly_variable_rate, provider):
-    # Chargeback report for hourly variable compute rate
-    report = gen_report_base(provider, assign_compute_hourly_variable_rate, 'Hourly')
-    yield list(report.get_saved_reports()[0].data)
-    report.delete()
-
-
-@pytest.yield_fixture(scope='module')
-def chargeback_report_for_daily_fixed_rate(assign_compute_daily_fixed_rate, provider):
-    # Chargeback report for daily fixed compute rate
-    report = gen_report_base(provider, assign_compute_daily_fixed_rate, 'Daily')
-    yield list(report.get_saved_reports()[0].data)
-    report.delete()
-
-
-@pytest.yield_fixture(scope='module')
-def chargeback_report_for_daily_variable_rate(assign_compute_daily_variable_rate, provider):
-    # Chargeback report for daily variable compute rate
-    report = gen_report_base(provider, assign_compute_daily_variable_rate, 'Daily')
-    yield list(report.get_saved_reports()[0].data)
-    report.delete()
-
-
-@pytest.yield_fixture(scope='module')
-def chargeback_report_for_weekly_fixed_rate(assign_compute_weekly_fixed_rate, provider):
-    # Chargeback report for weekly fixed compute rate
-    report = gen_report_base(provider, assign_compute_weekly_fixed_rate, 'Weekly')
-    yield list(report.get_saved_reports()[0].data)
-    report.delete()
-
-
-@pytest.yield_fixture(scope='module')
-def chargeback_report_for_weekly_variable_rate(assign_compute_weekly_variable_rate, provider):
-    # Chargeback report for weekly variable compute rate
-    report = gen_report_base(provider, assign_compute_weekly_variable_rate, 'Weekly')
-    yield list(report.get_saved_reports()[0].data)
-    report.delete()
-
-
-@pytest.yield_fixture(scope='module')
-def chargeback_report_for_monthly_fixed_rate(assign_compute_monthly_fixed_rate, provider):
-    # Chargeback report for monthly fixed compute rate
-    report = gen_report_base(provider, assign_compute_monthly_fixed_rate, 'Monthly')
-    yield list(report.get_saved_reports()[0].data)
-    report.delete()
-
-
-@pytest.yield_fixture(scope='module')
-def chargeback_report_for_monthly_variable_rate(assign_compute_monthly_variable_rate, provider):
-    # Chargeback report for monthly variable compute rate
-    report = gen_report_base(provider, assign_compute_monthly_variable_rate, 'Monthly')
-    yield list(report.get_saved_reports()[0].data)
-    report.delete()
-
-
-def abstract_test_chargeback_cost(report_data, cb_rate, rate_key, rate_interval, soft_assert):
-
-    """This is an abstract test function for test rate costs.
-    It's comparing the expected value that calculated by the rate
-    to the value in the chargeback report
+@pytest.mark.long_running_env
+@pytest.mark.parametrize('rate_key', CHARGEBACK_HEADER_NAMES.keys())
+def test_chargeback_cost(new_chargeback_report, rate_key, soft_assert):
+    """Test rate costs.
     Args:
-        :py:type:`list` report_data: The report data (rows as list).
-        :py:class:`ComputeRate` cb_rate: The chargeback rate object.
+        :py:type: tuple of (`CustomReport`, `ComputeRate`) new_chargeback_report:
+                  The chargeback report and the assigned rate.
         :py:type:`str` rate_key: The rate key as it appear in the CHARGEBACK_HEADER_NAMES keys.
-        :py:type:`str` rate_interval: The rate interval, (Hourly/Daily/Weekly/Monthly).
         :var soft_assert: soft_assert fixture.
     """
     report_headers = CHARGEBACK_HEADER_NAMES[rate_key]
+    rate_interval = assign_compute_custom_rate['Used CPU Cores']['per_time']
+    new_chargeback_report, cb_rate = new_chargeback_report
     interval_factor = rate_interval_factor_lut[rate_interval]
 
     found_some_project_to_test = False
-    for proj in report_data:
+    for proj in new_chargeback_report.data:
         for row in proj.rows:
 
             if row['Chargeback Rates'].lower() != cb_rate.description.lower():
@@ -294,395 +176,3 @@ def test_project_chargeback_new_fixed_rate(new_chargeback_hourly_fixed_compute_r
 @pytest.mark.polarion('CMP-10165')
 def test_project_chargeback_assign_compute_custom_rate(assign_compute_custom_rate):
     flash.assert_success_message('Rate Assignments saved')
-
-
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
-@pytest.mark.long_running_env
-@pytest.mark.polarion('CMP-10166')
-def test_project_chargeback_report_fixed_rate(chargeback_report_for_hourly_fixed_rate):
-    assert chargeback_report_for_hourly_fixed_rate, 'Error in produced report, No records found'
-
-
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
-@pytest.mark.long_running_env
-@pytest.mark.polarion('CMP-10185')
-def test_project_chargeback_fixed_rate_1_hourly_fixed_rate(
-        chargeback_report_for_hourly_fixed_rate, new_chargeback_hourly_fixed_compute_rate,
-        soft_assert):
-    abstract_test_chargeback_cost(chargeback_report_for_hourly_fixed_rate,
-                                  new_chargeback_hourly_fixed_compute_rate,
-                                  'Fixed1', 'Hourly', soft_assert)
-
-
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
-@pytest.mark.long_running_env
-@pytest.mark.polarion('CMP-10186')
-def test_project_chargeback_fixed_rate_2_hourly_fixed_rate(
-        chargeback_report_for_hourly_fixed_rate, new_chargeback_hourly_fixed_compute_rate,
-        soft_assert):
-    abstract_test_chargeback_cost(chargeback_report_for_hourly_fixed_rate,
-                                  new_chargeback_hourly_fixed_compute_rate,
-                                  'Fixed2', 'Hourly', soft_assert)
-
-
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
-@pytest.mark.long_running_env
-@pytest.mark.polarion('CMP-10187')
-def test_project_chargeback_cpu_cores_hourly_fixed_rate(
-        chargeback_report_for_hourly_fixed_rate, new_chargeback_hourly_fixed_compute_rate,
-        soft_assert):
-    abstract_test_chargeback_cost(chargeback_report_for_hourly_fixed_rate,
-                                  new_chargeback_hourly_fixed_compute_rate,
-                                  'CpuCores', 'Hourly', soft_assert)
-
-
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
-@pytest.mark.long_running_env
-@pytest.mark.polarion('CMP-10189')
-def test_project_chargeback_memory_used_hourly_fixed_rate(
-        chargeback_report_for_hourly_fixed_rate, new_chargeback_hourly_fixed_compute_rate,
-        soft_assert):
-    abstract_test_chargeback_cost(chargeback_report_for_hourly_fixed_rate,
-                                  new_chargeback_hourly_fixed_compute_rate,
-                                  'Memory', 'Hourly', soft_assert)
-
-
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
-@pytest.mark.long_running_env
-@pytest.mark.polarion('CMP-10190')
-def test_project_chargeback_network_io_hourly_fixed_rate(
-        chargeback_report_for_hourly_fixed_rate, new_chargeback_hourly_fixed_compute_rate,
-        soft_assert):
-    abstract_test_chargeback_cost(chargeback_report_for_hourly_fixed_rate,
-                                  new_chargeback_hourly_fixed_compute_rate,
-                                  'Network', 'Hourly', soft_assert)
-
-
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
-@pytest.mark.long_running_env
-@pytest.mark.polarion('CMP-TBD')
-def test_project_chargeback_fixed_rate_1_daily_fixed_rate(
-        chargeback_report_for_daily_fixed_rate, new_chargeback_daily_fixed_compute_rate,
-        soft_assert):
-    abstract_test_chargeback_cost(chargeback_report_for_daily_fixed_rate,
-                                  new_chargeback_daily_fixed_compute_rate,
-                                  'Fixed1', 'Daily', soft_assert)
-
-
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
-@pytest.mark.long_running_env
-@pytest.mark.polarion('CMP-TBD')
-def test_project_chargeback_fixed_rate_2_daily_fixed_rate(
-        chargeback_report_for_daily_fixed_rate, new_chargeback_daily_fixed_compute_rate,
-        soft_assert):
-    abstract_test_chargeback_cost(chargeback_report_for_daily_fixed_rate,
-                                  new_chargeback_daily_fixed_compute_rate,
-                                  'Fixed2', 'Daily', soft_assert)
-
-
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
-@pytest.mark.long_running_env
-@pytest.mark.polarion('CMP-TBD')
-def test_project_chargeback_cpu_cores_daily_fixed_rate(
-        chargeback_report_for_daily_fixed_rate, new_chargeback_daily_fixed_compute_rate,
-        soft_assert):
-    abstract_test_chargeback_cost(chargeback_report_for_daily_fixed_rate,
-                                  new_chargeback_daily_fixed_compute_rate,
-                                  'CpuCores', 'Daily', soft_assert)
-
-
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
-@pytest.mark.long_running_env
-@pytest.mark.polarion('CMP-TBD')
-def test_project_chargeback_memory_used_daily_fixed_rate(
-        chargeback_report_for_daily_fixed_rate, new_chargeback_daily_fixed_compute_rate,
-        soft_assert):
-    abstract_test_chargeback_cost(chargeback_report_for_daily_fixed_rate,
-                                  new_chargeback_daily_fixed_compute_rate,
-                                  'Memory', 'Daily', soft_assert)
-
-
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
-@pytest.mark.long_running_env
-@pytest.mark.polarion('CMP-TBD')
-def test_project_chargeback_network_io_daily_fixed_rate(
-        chargeback_report_for_daily_fixed_rate, new_chargeback_daily_fixed_compute_rate,
-        soft_assert):
-    abstract_test_chargeback_cost(chargeback_report_for_daily_fixed_rate,
-                                  new_chargeback_daily_fixed_compute_rate,
-                                  'Network', 'Daily', soft_assert)
-
-
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
-@pytest.mark.long_running_env
-@pytest.mark.polarion('CMP-TBD')
-def test_project_chargeback_fixed_rate_1_weekly_fixed_rate(
-        chargeback_report_for_weekly_fixed_rate, new_chargeback_weekly_fixed_compute_rate,
-        soft_assert):
-    abstract_test_chargeback_cost(chargeback_report_for_weekly_fixed_rate,
-                                  new_chargeback_weekly_fixed_compute_rate,
-                                  'Fixed1', 'Weekly', soft_assert)
-
-
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
-@pytest.mark.long_running_env
-@pytest.mark.polarion('CMP-TBD')
-def test_project_chargeback_fixed_rate_2_weekly_fixed_rate(
-        chargeback_report_for_weekly_fixed_rate, new_chargeback_weekly_fixed_compute_rate,
-        soft_assert):
-    abstract_test_chargeback_cost(chargeback_report_for_weekly_fixed_rate,
-                                  new_chargeback_weekly_fixed_compute_rate,
-                                  'Fixed2', 'Weekly', soft_assert)
-
-
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
-@pytest.mark.long_running_env
-@pytest.mark.polarion('CMP-TBD')
-def test_project_chargeback_cpu_cores_weekly_fixed_rate(
-        chargeback_report_for_weekly_fixed_rate, new_chargeback_weekly_fixed_compute_rate,
-        soft_assert):
-    abstract_test_chargeback_cost(chargeback_report_for_weekly_fixed_rate,
-                                  new_chargeback_weekly_fixed_compute_rate,
-                                  'CpuCores', 'Weekly', soft_assert)
-
-
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
-@pytest.mark.long_running_env
-@pytest.mark.polarion('CMP-TBD')
-def test_project_chargeback_memory_used_weekly_fixed_rate(
-        chargeback_report_for_weekly_fixed_rate, new_chargeback_weekly_fixed_compute_rate,
-        soft_assert):
-    abstract_test_chargeback_cost(chargeback_report_for_weekly_fixed_rate,
-                                  new_chargeback_weekly_fixed_compute_rate,
-                                  'Memory', 'Weekly', soft_assert)
-
-
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
-@pytest.mark.long_running_env
-@pytest.mark.polarion('CMP-TBD')
-def test_project_chargeback_network_io_weekly_fixed_rate(
-        chargeback_report_for_weekly_fixed_rate, new_chargeback_weekly_fixed_compute_rate,
-        soft_assert):
-    abstract_test_chargeback_cost(chargeback_report_for_weekly_fixed_rate,
-                                  new_chargeback_weekly_fixed_compute_rate,
-                                  'Network', 'Weekly', soft_assert)
-
-
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
-@pytest.mark.long_running_env
-@pytest.mark.polarion('CMP-TBD')
-def test_project_chargeback_fixed_rate_1_monthly_fixed_rate(
-        chargeback_report_for_monthly_fixed_rate, new_chargeback_monthly_fixed_compute_rate,
-        soft_assert):
-    abstract_test_chargeback_cost(chargeback_report_for_monthly_fixed_rate,
-                                  new_chargeback_monthly_fixed_compute_rate,
-                                  'Fixed1', 'Monthly', soft_assert)
-
-
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
-@pytest.mark.long_running_env
-@pytest.mark.polarion('CMP-TBD')
-def test_project_chargeback_fixed_rate_2_monthly_fixed_rate(
-        chargeback_report_for_monthly_fixed_rate, new_chargeback_monthly_fixed_compute_rate,
-        soft_assert):
-    abstract_test_chargeback_cost(chargeback_report_for_monthly_fixed_rate,
-                                  new_chargeback_monthly_fixed_compute_rate,
-                                  'Fixed2', 'Monthly', soft_assert)
-
-
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
-@pytest.mark.long_running_env
-@pytest.mark.polarion('CMP-TBD')
-def test_project_chargeback_cpu_cores_monthly_fixed_rate(
-        chargeback_report_for_monthly_fixed_rate, new_chargeback_monthly_fixed_compute_rate,
-        soft_assert):
-    abstract_test_chargeback_cost(chargeback_report_for_monthly_fixed_rate,
-                                  new_chargeback_monthly_fixed_compute_rate,
-                                  'CpuCores', 'Monthly', soft_assert)
-
-
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
-@pytest.mark.long_running_env
-@pytest.mark.polarion('CMP-TBD')
-def test_project_chargeback_memory_used_monthly_fixed_rate(
-        chargeback_report_for_monthly_fixed_rate, new_chargeback_monthly_fixed_compute_rate,
-        soft_assert):
-    abstract_test_chargeback_cost(chargeback_report_for_monthly_fixed_rate,
-                                  new_chargeback_monthly_fixed_compute_rate,
-                                  'Memory', 'Monthly', soft_assert)
-
-
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
-@pytest.mark.long_running_env
-@pytest.mark.polarion('CMP-TBD')
-def test_project_chargeback_network_io_monthly_fixed_rate(
-        chargeback_report_for_monthly_fixed_rate, new_chargeback_monthly_fixed_compute_rate,
-        soft_assert):
-    abstract_test_chargeback_cost(chargeback_report_for_monthly_fixed_rate,
-                                  new_chargeback_monthly_fixed_compute_rate,
-                                  'Network', 'Monthly', soft_assert)
-
-
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
-@pytest.mark.long_running_env
-@pytest.mark.polarion('CMP-TBD')
-def test_project_chargeback_memory_used_hourly_variable_rate(
-        chargeback_report_for_hourly_variable_rate, new_chargeback_hourly_variable_compute_rate,
-        soft_assert):
-    abstract_test_chargeback_cost(
-        chargeback_report_for_hourly_variable_rate, new_chargeback_hourly_variable_compute_rate,
-        'Memory', 'Hourly', soft_assert)
-
-
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
-@pytest.mark.long_running_env
-@pytest.mark.polarion('CMP-TBD')
-def test_project_chargeback_network_used_hourly_variable_rate(
-        chargeback_report_for_hourly_variable_rate, new_chargeback_hourly_variable_compute_rate,
-        soft_assert):
-    abstract_test_chargeback_cost(chargeback_report_for_hourly_variable_rate,
-                                  new_chargeback_hourly_variable_compute_rate,
-                                  'Network', 'Hourly', soft_assert)
-
-
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
-@pytest.mark.long_running_env
-@pytest.mark.polarion('CMP-TBD')
-def test_project_chargeback_cpu_cores_used_hourly_variable_rate(
-        chargeback_report_for_hourly_variable_rate, new_chargeback_hourly_variable_compute_rate,
-        soft_assert):
-    abstract_test_chargeback_cost(chargeback_report_for_hourly_variable_rate,
-                                  new_chargeback_hourly_variable_compute_rate,
-                                  'CpuCores', 'Hourly', soft_assert)
-
-
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
-@pytest.mark.long_running_env
-@pytest.mark.polarion('CMP-TBD')
-def test_project_chargeback_memory_used_daily_variable_rate(
-        chargeback_report_for_daily_variable_rate, new_chargeback_daily_variable_compute_rate,
-        soft_assert):
-    abstract_test_chargeback_cost(
-        chargeback_report_for_daily_variable_rate, new_chargeback_daily_variable_compute_rate,
-        'Memory', 'Daily', soft_assert)
-
-
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
-@pytest.mark.long_running_env
-@pytest.mark.polarion('CMP-TBD')
-def test_project_chargeback_network_used_daily_variable_rate(
-        chargeback_report_for_daily_variable_rate, new_chargeback_daily_variable_compute_rate,
-        soft_assert):
-    abstract_test_chargeback_cost(chargeback_report_for_daily_variable_rate,
-                                  new_chargeback_daily_variable_compute_rate,
-                                  'Network', 'Daily', soft_assert)
-
-
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
-@pytest.mark.long_running_env
-@pytest.mark.polarion('CMP-TBD')
-def test_project_chargeback_cpu_cores_used_daily_variable_rate(
-        chargeback_report_for_daily_variable_rate, new_chargeback_daily_variable_compute_rate,
-        soft_assert):
-    abstract_test_chargeback_cost(chargeback_report_for_daily_variable_rate,
-                                  new_chargeback_daily_variable_compute_rate,
-                                  'CpuCores', 'Daily', soft_assert)
-
-
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
-@pytest.mark.long_running_env
-@pytest.mark.polarion('CMP-TBD')
-def test_project_chargeback_memory_used_weekly_variable_rate(
-        chargeback_report_for_weekly_variable_rate, new_chargeback_weekly_variable_compute_rate,
-        soft_assert):
-    abstract_test_chargeback_cost(
-        chargeback_report_for_weekly_variable_rate, new_chargeback_weekly_variable_compute_rate,
-        'Memory', 'Weekly', soft_assert)
-
-
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
-@pytest.mark.long_running_env
-@pytest.mark.polarion('CMP-TBD')
-def test_project_chargeback_network_used_weekly_variable_rate(
-        chargeback_report_for_weekly_variable_rate, new_chargeback_weekly_variable_compute_rate,
-        soft_assert):
-    abstract_test_chargeback_cost(chargeback_report_for_weekly_variable_rate,
-                                  new_chargeback_weekly_variable_compute_rate,
-                                  'Network', 'Weekly', soft_assert)
-
-
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
-@pytest.mark.long_running_env
-@pytest.mark.polarion('CMP-TBD')
-def test_project_chargeback_cpu_cores_used_weekly_variable_rate(
-        chargeback_report_for_weekly_variable_rate, new_chargeback_weekly_variable_compute_rate,
-        soft_assert):
-    abstract_test_chargeback_cost(chargeback_report_for_weekly_variable_rate,
-                                  new_chargeback_weekly_variable_compute_rate,
-                                  'CpuCores', 'Weekly', soft_assert)
-
-
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
-@pytest.mark.long_running_env
-@pytest.mark.polarion('CMP-TBD')
-def test_project_chargeback_memory_used_monthly_variable_rate(
-        chargeback_report_for_monthly_variable_rate, new_chargeback_monthly_variable_compute_rate,
-        soft_assert):
-    abstract_test_chargeback_cost(
-        chargeback_report_for_monthly_variable_rate, new_chargeback_monthly_variable_compute_rate,
-        'Memory', 'Monthly', soft_assert)
-
-
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
-@pytest.mark.long_running_env
-@pytest.mark.polarion('CMP-TBD')
-def test_project_chargeback_network_used_monthly_variable_rate(
-        chargeback_report_for_monthly_variable_rate, new_chargeback_monthly_variable_compute_rate,
-        soft_assert):
-    abstract_test_chargeback_cost(chargeback_report_for_monthly_variable_rate,
-                                  new_chargeback_monthly_variable_compute_rate,
-                                  'Network', 'Monthly', soft_assert)
-
-
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
-@pytest.mark.long_running_env
-@pytest.mark.polarion('CMP-TBD')
-def test_project_chargeback_cpu_cores_used_monthly_variable_rate(
-        chargeback_report_for_monthly_variable_rate, new_chargeback_monthly_variable_compute_rate,
-        soft_assert):
-    abstract_test_chargeback_cost(chargeback_report_for_monthly_variable_rate,
-                                  new_chargeback_monthly_variable_compute_rate,
-                                  'CpuCores', 'Monthly', soft_assert)
