@@ -114,8 +114,13 @@ def new_chargeback_report(provider, assign_compute_custom_rate):
     report.delete()
 
 
+@pytest.fixture(scope='module', params=CHARGEBACK_HEADER_NAMES.keys())
+def rate_key(new_chargeback_report, request):
+    # Workaround instead of parameterization due to https://github.com/pytest-dev/pytest/issues/634
+    return request.param
+
+
 @pytest.mark.long_running_env
-@pytest.mark.parametrize('rate_key', CHARGEBACK_HEADER_NAMES.keys())
 def test_chargeback_cost(new_chargeback_report, rate_key, soft_assert):
     """Test rate costs.
     Args:
@@ -125,12 +130,12 @@ def test_chargeback_cost(new_chargeback_report, rate_key, soft_assert):
         :var soft_assert: soft_assert fixture.
     """
     report_headers = CHARGEBACK_HEADER_NAMES[rate_key]
-    rate_interval = assign_compute_custom_rate['Used CPU Cores']['per_time']
     new_chargeback_report, cb_rate = new_chargeback_report
+    rate_interval = cb_rate['Used CPU Cores']['per_time']
     interval_factor = rate_interval_factor_lut[rate_interval]
 
     found_some_project_to_test = False
-    for proj in new_chargeback_report.data:
+    for proj in new_chargeback_report.get_saved_reports()[0].data:
         for row in proj.rows:
 
             if row['Chargeback Rates'].lower() != cb_rate.description.lower():
