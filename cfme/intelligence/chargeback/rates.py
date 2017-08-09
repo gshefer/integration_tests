@@ -11,7 +11,7 @@ from utils.update import Updateable
 from widgetastic.utils import ParametrizedLocator, ParametrizedString
 from widgetastic.widget import Text, ParametrizedView
 from widgetastic_manageiq import Select
-from widgetastic_patternfly import Button, Input, Dropdown
+from widgetastic_patternfly import Button, CandidateNotFound, Input, Dropdown
 
 
 class RatesView(ChargebackView):
@@ -252,6 +252,14 @@ class ComputeRate(Updateable, Pretty, Navigatable):
         view.configuration.item_select('Remove from the VMDB', handle_alert=True)
         view.flash.assert_success_message('Chargeback Rate "{}": Delete successful'.format(
             self.description))
+
+    @property
+    def exists(self):
+        try:
+            navigate_to(self, 'Details')
+            return True
+        except CandidateNotFound:
+            return False
 
 
 class StorageRate(ComputeRate):
