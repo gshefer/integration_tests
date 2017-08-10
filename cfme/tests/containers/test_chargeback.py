@@ -190,7 +190,7 @@ def abstract_test_chargeback_cost(
 
 
 @pytest.yield_fixture(scope='module')
-def compute_rate(appliance, rt_i_o_group, rate):
+def compute_rate(appliance, rt_i_o_group):
     rate_type = rt_i_o_group[0]
     interval = rt_i_o_group[1]
     variable_rate = 1 if rate_type == 'variable' else 0
