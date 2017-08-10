@@ -83,9 +83,6 @@ class AddComputeChargebackView(RatesView):
             ROOT = ParametrizedLocator(
                 '../tr[./td/input[starts-with(@id, "fixed_rate_{@row_id}_{index}")]]')
 
-            def __locator__(self):
-                return self.browser.element(self.ROOT, parent=self.parent)
-
             @cached_property
             def row_id(self):
                 return self.parent.row_id
