@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
+import fauxfactory
 from humanfriendly import parse_size, tokenize
 import pytest
 
 from cfme.containers.provider import ContainersProvider
-from cfme.intelligence.chargeback import assignments
+from cfme.intelligence.chargeback import assignments, rates
 from cfme.intelligence.reports.reports import CustomReport
 from utils import testgen
 from utils.log import logger
@@ -23,13 +24,6 @@ pytest_generate_tests = testgen.generate([ContainersProvider], scope='module')
 TEST_MATCH_ACCURACY = 0.01
 
 rate_interval_factor_lut = {'Hourly': 24, 'Daily': 7, 'Weekly': 4.29, 'Monthly': 1}
-
-
-obj_types = ['Image', 'Project']
-fixed_rates = ['Fixed1', 'Fixed2', 'CpuCores', 'Memory', 'Network']
-variable_rates = ['CpuCores', 'Memory', 'Network']
-rates = set(fixed_rates + variable_rates)
-intervals = ['Hourly', 'Daily', 'Weekly', 'Monthly']
 
 
 def revert_to_default_rate(provider):
@@ -195,60 +189,78 @@ def abstract_test_chargeback_cost(
         'Could not find {} with the assigned rate: {}'.format(obj_type, cb_rate.description)
 
 
-@pytest.yield_fixture()
-def assign_compute_rate(obj_type, compute_rate, rate_type, rate, interval, provider):
+@pytest.yield_fixture(scope='module')
+def compute_rate(appliance, rt_i_o_group, rate):
+    rate_type = rt_i_o_group[0]
+    interval = rt_i_o_group[1]
+    variable_rate = 1 if rate_type == 'variable' else 0
+    description = 'custom_rate_' + fauxfactory.gen_alphanumeric()
+    data = {
+        'Used CPU Cores': {'per_time': interval,
+                           'fixed_rate': 1,
+                           'variable_rate': variable_rate},
+        'Fixed Compute Cost 1': {'per_time': interval,
+                                 'fixed_rate': 1},
+        'Fixed Compute Cost 2': {'per_time': interval,
+                                 'fixed_rate': 1},
+        'Used Memory': {'per_time': interval,
+                        'fixed_rate': 1,
+                        'variable_rate': variable_rate},
+        'Used Network I/O': {'per_time': interval,
+                             'fixed_rate': 1,
+                             'variable_rate': variable_rate}
+    }
+    ccb = rates.ComputeRate(description, fields=data, appliance=appliance)
+    ccb.create()
+    yield ccb
+    ccb.delete()
+
+
+@pytest.yield_fixture(scope='module')
+def assign_compute_rate(rt_i_o_group, compute_rate, provider):
+    obj_type = rt_i_o_group[2]
     assign_custom_compute_rate(obj_type, compute_rate, provider)
     yield compute_rate.description
     revert_to_default_rate(provider)
 
 
-@pytest.yield_fixture()
+@pytest.yield_fixture(scope='module')
 def chargeback_report(
-        obj_type, assign_compute_rate, rate_type, rate, interval, provider):
+        rt_i_o_group, assign_compute_rate, provider):
+    interval = rt_i_o_group[1]
+    obj_type = rt_i_o_group[2]
     report = gen_report_base(obj_type, provider, assign_compute_rate, interval)
     yield list(report.get_saved_reports()[0].data)
     report.delete()
 
 
-# =========== WHY DOES THIS EXIST JUST FOR PROJECTS AND NOT IMAGES ??
-# I didn't touch it for that reason ^
-
-# This is incorrect; we are testing object creation within a fixture; this test will never FAIL
-# it can only PASS or ERROR because of that...
-# @pytest.mark.polarion('CMP-10164')
-# def test_project_chargeback_new_fixed_rate(new_chargeback_hourly_fixed_compute_rate):
-#    flash.assert_success_message('Chargeback Rate "{}" was added'
-#                                 .format(new_chargeback_hourly_fixed_compute_rate.description))
-#
-#
-# Same here
-# @pytest.mark.polarion('CMP-10165')
-# def test_project_chargeback_assign_compute_custom_rate(assign_compute_custom_rate):
-#    flash.assert_success_message('Rate Assignments saved')
-#
-#
-# Same here
-# @pytest.mark.long_running_env
-# @pytest.mark.polarion('CMP-10166')
-# def test_project_chargeback_report_fixed_rate(chargeback_report_for_hourly_fixed_rate):
-#    assert chargeback_report_for_hourly_fixed_rate, 'Error in produced report, No records found'
-#
-# ===========
+obj_types = ['Image', 'Project']
+fixed_rates = ['Fixed1', 'Fixed2', 'CpuCores', 'Memory', 'Network']
+variable_rates = ['CpuCores', 'Memory', 'Network']
+all_rates = set(fixed_rates + variable_rates)
+intervals = ['Hourly', 'Daily', 'Weekly', 'Monthly']
+rate_types = ['fixed', 'variable']
+rt_i_o_groups = [(rt, i, o) for o in obj_types for rt in rate_types for i in intervals]
 
 
-@pytest.mark.parametrize('obj_type', obj_types)
-@pytest.mark.parametrize('rate', rates)
-@pytest.mark.parametrize('interval', intervals)
-@pytest.mark.parametrize('rate_type', ['fixed', 'variable'])
+@pytest.mark.parametrize('rate', all_rates)
+@pytest.mark.parametrize(
+    'rt_i_o_group',
+    rt_i_o_groups,
+    ids=lambda rt_i_o: '{}-{}-{}'.format(rt_i_o[0], rt_i_o[1], rt_i_o[2]),
+    scope='module')
 @pytest.mark.uncollectif(
-    lambda rate_type, rate:
-        (rate_type == 'variable' and rate not in variable_rates) or
-        (rate_type == 'fixed' and rate not in fixed_rates)
+    lambda rt_i_o_group, rate:
+        (rt_i_o_group[0] == 'variable' and rate not in variable_rates) or
+        (rt_i_o_group[0] == 'fixed' and rate not in fixed_rates)
 )
 @pytest.mark.long_running_env
 # @pytest.mark.skip('This test is skipped due to a framework issue: '
 #                   'https://github.com/ManageIQ/integration_tests/issues/5027')
 def test_chargeback_rate(
-        obj_type, chargeback_report, compute_rate, rate_type, rate, interval, soft_assert):
+        chargeback_report, compute_rate, rt_i_o_group, rate, soft_assert):
+    return
+    interval = rt_i_o_group[1]
+    obj_type = rt_i_o_group[2]
     abstract_test_chargeback_cost(
         obj_type, chargeback_report, compute_rate, rate, interval, soft_assert)

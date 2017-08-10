@@ -86,7 +86,6 @@ pytest_plugins = (
     'cfme.fixtures.tag',
     'cfme.fixtures.vm_name',
     'cfme.fixtures.vporizer',
-    'cfme.fixtures.chargeback_rate',
 
     'cfme.metaplugins',
 )
