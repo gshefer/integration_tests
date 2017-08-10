@@ -255,8 +255,6 @@ rt_i_o_groups = [(rt, i, o) for o in obj_types for rt in rate_types for i in int
         (rt_i_o_group[0] == 'fixed' and rate not in fixed_rates)
 )
 @pytest.mark.long_running_env
-# @pytest.mark.skip('This test is skipped due to a framework issue: '
-#                   'https://github.com/ManageIQ/integration_tests/issues/5027')
 def test_chargeback_rate(
         chargeback_report, compute_rate, rt_i_o_group, rate, soft_assert):
     return

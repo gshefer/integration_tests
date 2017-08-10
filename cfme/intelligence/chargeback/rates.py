@@ -121,8 +121,12 @@ class AddComputeChargebackView(RatesView):
                 if sub_row_id < len(values):
                     sub_row.fill(values[sub_row_id])
                 elif sub_row.is_displayed:
-                    sub_row.action_delete.click()
-                    continue
+                    # This action is currently skipped due to the following issue:
+                    #     https://github.com/ManageIQ/integration_tests/issues/5027
+                    # once the issue solved - uncomment the following 2 lines and remove the pass:
+                    # sub_row.action_delete.click()
+                    # continue
+                    pass
                 else:
                     break
                 sub_row_id += 1
