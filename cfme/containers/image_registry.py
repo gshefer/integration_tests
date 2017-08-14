@@ -25,9 +25,10 @@ class ImageRegistry(Taggable, SummaryMixin, Navigatable):
 
     PLURAL = 'Image Registries'
 
-    def __init__(self, host, provider, appliance=None):
+    def __init__(self, host, provider, project_name, appliance=None):
         self.host = host
         self.provider = provider
+        self.project_name = project_name
         Navigatable.__init__(self, appliance=appliance)
 
     def load_details(self, refresh=False):
@@ -44,7 +45,7 @@ class ImageRegistry(Taggable, SummaryMixin, Navigatable):
         """Generating random instances."""
         ir_rows_list = navigate_and_get_rows(provider, cls, count, silent_failure=True)
         random.shuffle(ir_rows_list)
-        return [cls(row.host.text, provider, appliance=appliance)
+        return [cls(row.host.text, provider, row.project_name, appliance=appliance)
                 for row in ir_rows_list]
 
 
