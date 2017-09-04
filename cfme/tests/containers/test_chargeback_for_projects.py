@@ -281,31 +281,23 @@ def abstract_test_chargeback_cost(report_data, cb_rate, rate_key, rate_interval,
         'Could not find an project with the assigned rate: {}'.format(cb_rate.description)
 
 
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
 @pytest.mark.polarion('CMP-10164')
 def test_project_chargeback_new_fixed_rate(new_chargeback_hourly_fixed_compute_rate):
     flash.assert_success_message('Chargeback Rate "{}" was added'
                                  .format(new_chargeback_hourly_fixed_compute_rate.description))
 
 
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
 @pytest.mark.polarion('CMP-10165')
 def test_project_chargeback_assign_compute_custom_rate(assign_compute_custom_rate):
     flash.assert_success_message('Rate Assignments saved')
 
 
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
 @pytest.mark.long_running_env
 @pytest.mark.polarion('CMP-10166')
 def test_project_chargeback_report_fixed_rate(chargeback_report_for_hourly_fixed_rate):
     assert chargeback_report_for_hourly_fixed_rate, 'Error in produced report, No records found'
 
 
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
 @pytest.mark.long_running_env
 @pytest.mark.polarion('CMP-10185')
 def test_project_chargeback_fixed_rate_1_hourly_fixed_rate(
@@ -316,8 +308,6 @@ def test_project_chargeback_fixed_rate_1_hourly_fixed_rate(
                                   'Fixed1', 'Hourly', soft_assert)
 
 
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
 @pytest.mark.long_running_env
 @pytest.mark.polarion('CMP-10186')
 def test_project_chargeback_fixed_rate_2_hourly_fixed_rate(
@@ -328,8 +318,6 @@ def test_project_chargeback_fixed_rate_2_hourly_fixed_rate(
                                   'Fixed2', 'Hourly', soft_assert)
 
 
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
 @pytest.mark.long_running_env
 @pytest.mark.polarion('CMP-10187')
 def test_project_chargeback_cpu_cores_hourly_fixed_rate(
@@ -340,8 +328,6 @@ def test_project_chargeback_cpu_cores_hourly_fixed_rate(
                                   'CpuCores', 'Hourly', soft_assert)
 
 
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
 @pytest.mark.long_running_env
 @pytest.mark.polarion('CMP-10189')
 def test_project_chargeback_memory_used_hourly_fixed_rate(
@@ -352,8 +338,6 @@ def test_project_chargeback_memory_used_hourly_fixed_rate(
                                   'Memory', 'Hourly', soft_assert)
 
 
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
 @pytest.mark.long_running_env
 @pytest.mark.polarion('CMP-10190')
 def test_project_chargeback_network_io_hourly_fixed_rate(
@@ -364,8 +348,6 @@ def test_project_chargeback_network_io_hourly_fixed_rate(
                                   'Network', 'Hourly', soft_assert)
 
 
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
 @pytest.mark.long_running_env
 @pytest.mark.polarion('CMP-TBD')
 def test_project_chargeback_fixed_rate_1_daily_fixed_rate(
@@ -376,8 +358,6 @@ def test_project_chargeback_fixed_rate_1_daily_fixed_rate(
                                   'Fixed1', 'Daily', soft_assert)
 
 
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
 @pytest.mark.long_running_env
 @pytest.mark.polarion('CMP-TBD')
 def test_project_chargeback_fixed_rate_2_daily_fixed_rate(
@@ -388,8 +368,6 @@ def test_project_chargeback_fixed_rate_2_daily_fixed_rate(
                                   'Fixed2', 'Daily', soft_assert)
 
 
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
 @pytest.mark.long_running_env
 @pytest.mark.polarion('CMP-TBD')
 def test_project_chargeback_cpu_cores_daily_fixed_rate(
@@ -400,8 +378,6 @@ def test_project_chargeback_cpu_cores_daily_fixed_rate(
                                   'CpuCores', 'Daily', soft_assert)
 
 
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
 @pytest.mark.long_running_env
 @pytest.mark.polarion('CMP-TBD')
 def test_project_chargeback_memory_used_daily_fixed_rate(
@@ -412,8 +388,6 @@ def test_project_chargeback_memory_used_daily_fixed_rate(
                                   'Memory', 'Daily', soft_assert)
 
 
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
 @pytest.mark.long_running_env
 @pytest.mark.polarion('CMP-TBD')
 def test_project_chargeback_network_io_daily_fixed_rate(
@@ -424,8 +398,6 @@ def test_project_chargeback_network_io_daily_fixed_rate(
                                   'Network', 'Daily', soft_assert)
 
 
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
 @pytest.mark.long_running_env
 @pytest.mark.polarion('CMP-TBD')
 def test_project_chargeback_fixed_rate_1_weekly_fixed_rate(
@@ -436,8 +408,6 @@ def test_project_chargeback_fixed_rate_1_weekly_fixed_rate(
                                   'Fixed1', 'Weekly', soft_assert)
 
 
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
 @pytest.mark.long_running_env
 @pytest.mark.polarion('CMP-TBD')
 def test_project_chargeback_fixed_rate_2_weekly_fixed_rate(
@@ -448,8 +418,6 @@ def test_project_chargeback_fixed_rate_2_weekly_fixed_rate(
                                   'Fixed2', 'Weekly', soft_assert)
 
 
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
 @pytest.mark.long_running_env
 @pytest.mark.polarion('CMP-TBD')
 def test_project_chargeback_cpu_cores_weekly_fixed_rate(
@@ -460,8 +428,6 @@ def test_project_chargeback_cpu_cores_weekly_fixed_rate(
                                   'CpuCores', 'Weekly', soft_assert)
 
 
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
 @pytest.mark.long_running_env
 @pytest.mark.polarion('CMP-TBD')
 def test_project_chargeback_memory_used_weekly_fixed_rate(
@@ -472,8 +438,6 @@ def test_project_chargeback_memory_used_weekly_fixed_rate(
                                   'Memory', 'Weekly', soft_assert)
 
 
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
 @pytest.mark.long_running_env
 @pytest.mark.polarion('CMP-TBD')
 def test_project_chargeback_network_io_weekly_fixed_rate(
@@ -484,8 +448,6 @@ def test_project_chargeback_network_io_weekly_fixed_rate(
                                   'Network', 'Weekly', soft_assert)
 
 
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
 @pytest.mark.long_running_env
 @pytest.mark.polarion('CMP-TBD')
 def test_project_chargeback_fixed_rate_1_monthly_fixed_rate(
@@ -496,8 +458,6 @@ def test_project_chargeback_fixed_rate_1_monthly_fixed_rate(
                                   'Fixed1', 'Monthly', soft_assert)
 
 
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
 @pytest.mark.long_running_env
 @pytest.mark.polarion('CMP-TBD')
 def test_project_chargeback_fixed_rate_2_monthly_fixed_rate(
@@ -508,8 +468,6 @@ def test_project_chargeback_fixed_rate_2_monthly_fixed_rate(
                                   'Fixed2', 'Monthly', soft_assert)
 
 
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
 @pytest.mark.long_running_env
 @pytest.mark.polarion('CMP-TBD')
 def test_project_chargeback_cpu_cores_monthly_fixed_rate(
@@ -520,8 +478,6 @@ def test_project_chargeback_cpu_cores_monthly_fixed_rate(
                                   'CpuCores', 'Monthly', soft_assert)
 
 
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
 @pytest.mark.long_running_env
 @pytest.mark.polarion('CMP-TBD')
 def test_project_chargeback_memory_used_monthly_fixed_rate(
@@ -532,8 +488,6 @@ def test_project_chargeback_memory_used_monthly_fixed_rate(
                                   'Memory', 'Monthly', soft_assert)
 
 
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
 @pytest.mark.long_running_env
 @pytest.mark.polarion('CMP-TBD')
 def test_project_chargeback_network_io_monthly_fixed_rate(
@@ -544,8 +498,6 @@ def test_project_chargeback_network_io_monthly_fixed_rate(
                                   'Network', 'Monthly', soft_assert)
 
 
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
 @pytest.mark.long_running_env
 @pytest.mark.polarion('CMP-TBD')
 def test_project_chargeback_memory_used_hourly_variable_rate(
@@ -556,8 +508,6 @@ def test_project_chargeback_memory_used_hourly_variable_rate(
         'Memory', 'Hourly', soft_assert)
 
 
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
 @pytest.mark.long_running_env
 @pytest.mark.polarion('CMP-TBD')
 def test_project_chargeback_network_used_hourly_variable_rate(
@@ -568,8 +518,6 @@ def test_project_chargeback_network_used_hourly_variable_rate(
                                   'Network', 'Hourly', soft_assert)
 
 
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
 @pytest.mark.long_running_env
 @pytest.mark.polarion('CMP-TBD')
 def test_project_chargeback_cpu_cores_used_hourly_variable_rate(
@@ -580,8 +528,6 @@ def test_project_chargeback_cpu_cores_used_hourly_variable_rate(
                                   'CpuCores', 'Hourly', soft_assert)
 
 
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
 @pytest.mark.long_running_env
 @pytest.mark.polarion('CMP-TBD')
 def test_project_chargeback_memory_used_daily_variable_rate(
@@ -592,8 +538,6 @@ def test_project_chargeback_memory_used_daily_variable_rate(
         'Memory', 'Daily', soft_assert)
 
 
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
 @pytest.mark.long_running_env
 @pytest.mark.polarion('CMP-TBD')
 def test_project_chargeback_network_used_daily_variable_rate(
@@ -604,8 +548,6 @@ def test_project_chargeback_network_used_daily_variable_rate(
                                   'Network', 'Daily', soft_assert)
 
 
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
 @pytest.mark.long_running_env
 @pytest.mark.polarion('CMP-TBD')
 def test_project_chargeback_cpu_cores_used_daily_variable_rate(
@@ -616,8 +558,6 @@ def test_project_chargeback_cpu_cores_used_daily_variable_rate(
                                   'CpuCores', 'Daily', soft_assert)
 
 
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
 @pytest.mark.long_running_env
 @pytest.mark.polarion('CMP-TBD')
 def test_project_chargeback_memory_used_weekly_variable_rate(
@@ -628,8 +568,6 @@ def test_project_chargeback_memory_used_weekly_variable_rate(
         'Memory', 'Weekly', soft_assert)
 
 
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
 @pytest.mark.long_running_env
 @pytest.mark.polarion('CMP-TBD')
 def test_project_chargeback_network_used_weekly_variable_rate(
@@ -640,8 +578,6 @@ def test_project_chargeback_network_used_weekly_variable_rate(
                                   'Network', 'Weekly', soft_assert)
 
 
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
 @pytest.mark.long_running_env
 @pytest.mark.polarion('CMP-TBD')
 def test_project_chargeback_cpu_cores_used_weekly_variable_rate(
@@ -652,8 +588,6 @@ def test_project_chargeback_cpu_cores_used_weekly_variable_rate(
                                   'CpuCores', 'Weekly', soft_assert)
 
 
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
 @pytest.mark.long_running_env
 @pytest.mark.polarion('CMP-TBD')
 def test_project_chargeback_memory_used_monthly_variable_rate(
@@ -664,8 +598,6 @@ def test_project_chargeback_memory_used_monthly_variable_rate(
         'Memory', 'Monthly', soft_assert)
 
 
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
 @pytest.mark.long_running_env
 @pytest.mark.polarion('CMP-TBD')
 def test_project_chargeback_network_used_monthly_variable_rate(
@@ -676,8 +608,6 @@ def test_project_chargeback_network_used_monthly_variable_rate(
                                   'Network', 'Monthly', soft_assert)
 
 
-@pytest.mark.skip('This test is skipped due to a framework issue: '
-                  'https://github.com/ManageIQ/integration_tests/issues/5027')
 @pytest.mark.long_running_env
 @pytest.mark.polarion('CMP-TBD')
 def test_project_chargeback_cpu_cores_used_monthly_variable_rate(
