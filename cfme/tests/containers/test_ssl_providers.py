@@ -12,7 +12,8 @@ from cfme.common.provider_views import ContainerProvidersView
 
 pytestmark = [
     pytest.mark.uncollectif(lambda: current_version() < "5.8.0.3"),
-    pytest.mark.provider([ContainersProvider], scope='module')
+    pytest.mark.provider([ContainersProvider], scope='module'),
+    pytest.mark.skip(reason='Problematic test')
 ]
 
 alphanumeric_name = gen_alphanumeric(10)
